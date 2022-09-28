@@ -5,22 +5,22 @@ from selenium import webdriver
 from general.settings import settings
 from general.browser_manager import BrowserManager
 
+
 if __name__ == '__main__':
 
-    TEST_URL: str = 'https://guidedhacking.com/'
+    browser = BrowserManager(
+        webdriver.Chrome,
+        webdriver.ChromeOptions,
+        settings.GOOGLE_OPTIONS_ARGUMENTS
+    ).run()
 
     try:
-        browser = BrowserManager(
-            webdriver.Chrome,
-            webdriver.ChromeOptions,
-            settings.GOOGLE_OPTIONS_ARGUMENTS
-        ).run()
 
-        browser.load_page(TEST_URL)
-        browser.open_new_tab(TEST_URL)
-        browser.open_new_tab(TEST_URL)
-        browser.open_new_tab(TEST_URL)
-        browser.open_new_tab(TEST_URL)
+        browser.load_page(settings.VK_PAGE)
+        browser.open_new_tab(settings.VK_PAGE)
+        browser.open_new_tab(settings.VK_PAGE)
+        browser.open_new_tab(settings.VK_PAGE)
+        browser.open_new_tab(settings.VK_PAGE)
 
         for tab_index in browser.tabs:
 
@@ -30,6 +30,5 @@ if __name__ == '__main__':
             browser.switch_to_tab(tab_index)
             time.sleep(0.5)
 
-        print('all pages was loaded')
     except KeyboardInterrupt:
         browser.driver.close()

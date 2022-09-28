@@ -2,6 +2,8 @@ from typing import Callable
 from selenium import webdriver
 
 from .schemas import Tab
+from .services.logger import BROWSER_LOGGER
+from .services.path import CHROME_DRIVER_PATH
 
 
 class BrowserManager:
@@ -37,7 +39,7 @@ class BrowserManager:
     def switch_to_tab(self, index: int) -> bool:
         if tab := self.tabs.get(index):
             self.driver.switch_to.window(tab.uuid)
-            print(f'switched to {index} tab')
+            BROWSER_LOGGER.info(f'SWITCHED TO {index} TAB')
             return True
 
         return False
@@ -49,14 +51,17 @@ class BrowserManager:
         ] = lambda v: True
     ) -> bool:
         tab_index: int = self._tabs_by_uuid[self.driver.current_window_handle].index
-        print(f"Checking if \"{tab_index}\" page is loaded.")
+        BROWSER_LOGGER.info(f"CHECKING IF \"{tab_index}\" PAGE IS LOADED")
+
         if (
             page_loading_state_handler(self.driver)
             and self.driver.execute_script(
                 'return document.readyState;'
             ) == 'complete'
         ):
-            print(f"\"{tab_index}\" tab page successfully loaded.")
+            BROWSER_LOGGER.info(
+                f"\"{tab_index}\" TAB PAGE SUCCESSFULLY LOADED"
+            )
             return True
 
         return False
@@ -69,16 +74,23 @@ class BrowserManager:
         capabilities = webdriver.DesiredCapabilities.CHROME.copy()
         capabilities['pageLoadStrategy'] = "none"  # default is "normal".
 
+        BROWSER_LOGGER.debug('ADDING CHROME DRIVER OPTIONS')
+
         if self.driver_options is not None:
             self.driver_options: webdriver.ChromeOptions = self.driver_options()
 
             for argument in self.option_arguments:
                 self.driver_options.add_argument(argument)
 
+        BROWSER_LOGGER.debug('ADDING CHROME DRIVER OPTIONS: "DONE"')
+
         self.driver: webdriver.Chrome = self.driver(
+            executable_path=CHROME_DRIVER_PATH,
             options=self.driver_options,
             desired_capabilities=capabilities
         )
+
+        BROWSER_LOGGER.info('DRIVER WAS STARTED')
 
         self._append_tab(Tab(
             index=len(self.tabs),
@@ -91,4 +103,5 @@ class BrowserManager:
         return self
 
     def shutdown(self) -> None:
+        BROWSER_LOGGER.info('SHUTTING DOWN. BYE .-.')
         self.driver.close()
